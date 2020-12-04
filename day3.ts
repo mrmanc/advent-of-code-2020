@@ -334,3 +334,4 @@ function treesForSlope(across: number, down: number) {
 }
 
 console.log(`Part 1: ${treesForSlope(3, 1)}`)
+console.log(`Part 2: ${treesForSlope(1, 1) * treesForSlope(3, 1) * treesForSlope(5, 1) * treesForSlope(7, 1) * treesForSlope(1, 2)}`)
