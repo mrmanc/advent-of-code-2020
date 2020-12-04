@@ -998,16 +998,17 @@ let input: string[] = ["1-8 n: dpwpmhknmnlglhjtrbpx",
     "4-11 g: zkxvrprgzxjcbg",
     "11-14 g: ggggggggggggggggg",
     "6-7 q: qqqqvqhq"];
-let validPasswords: number = 0;
+let validPart1Passwords: number = 0;
+let validPart2Passwords: number = 0;
 input.forEach(entry => {
     let parts: string[] = entry.split(/[ :-]+/),
-        min: number = +parts[0],
-        max: number = +parts[1],
+        first: number = +parts[0],
+        second: number = +parts[1],
         requiredLetter: string = parts[2],
-        password: string = parts[3],
-        appearances: number = password.split("").filter(letter => letter === requiredLetter).length;
-    if (min <= appearances && appearances <= max) {
-        validPasswords++;
-    }
+        passwordCharacters = parts[3].split(''),
+        appearances: number = passwordCharacters.filter(letter => letter === requiredLetter).length;
+    if (first <= appearances && appearances <= second) validPart1Passwords++;
+    if ((passwordCharacters[first - 1] === requiredLetter) !== (passwordCharacters[second - 1] === requiredLetter)) validPart2Passwords++;
 })
-console.log(`Part 1: ${validPasswords}`);
+console.log(`Part 1: ${validPart1Passwords}`);
+console.log(`Part 2: ${validPart2Passwords}`);
