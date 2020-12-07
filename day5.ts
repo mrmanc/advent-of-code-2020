@@ -900,14 +900,13 @@ let input: string[] = ['BFFFFBBRRL',
     'BBFFBBFRRR'
 ]
 
-function seatRow(boardingPass:string) {
-    return parseInt(boardingPass.slice(0,7).split('').map(c => c == 'B' ? 1 : 0).join(''),2)
-}
-function seatCol(boardingPass:string) {
-    return parseInt(boardingPass.slice(7,10).split('').map(c => c == 'R' ? 1 : 0).join(''),2)
+function decodeBinary(code: string, trueCharacter: string) {
+    return parseInt(code.split('').map(c => c == trueCharacter ? 1 : 0).join(''), 2);
 }
 function seatID(boardingPass:string) {
-    return seatRow(boardingPass) * 8 + seatCol(boardingPass);
+    let row = decodeBinary(boardingPass.slice(0, 7), 'B');
+    let col = decodeBinary(boardingPass.slice(7, 10), 'R');
+    return row * 8 + col;
 }
 let highestSeatID:number = 0;
 let seats = {}
