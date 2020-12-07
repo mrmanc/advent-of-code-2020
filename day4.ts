@@ -1136,7 +1136,8 @@ let passportData = ["eyr:2028 iyr:2016 byr:1995 ecl:oth",
     "",
     "pid:#725759",
     "hcl:#602927 iyr:2013 byr:2003 eyr:2023 cid:100"];
-let validPassports: number = 0;
+let validPassportsPart1: number = 0;
+let validPassportsPart2: number = 0;
 let currentPassportData = new Map();
 let requiredFields = ['byr',
     'iyr',
@@ -1148,17 +1149,22 @@ let requiredFields = ['byr',
 ]
 
 function validate(key, value) {
-    return key == 'byr' && +value >= 1920 && +value <= 2002 ||
+    function heightAmount() {
+        return value.substr(0, value.length - 2);
+    }
+
+    let isValid = key == 'byr' && +value >= 1920 && +value <= 2002 ||
         key == 'iyr' && +value >= 2010 && +value <= 2020 ||
         key == 'eyr' && +value >= 2020 && +value <= 2030 ||
         key == 'hgt' && (
-            // need to strip off the end, not the rest
-            value.match(/cm$/) && +value.substr(-2) >= 150 && +value <= 193 ||
-            value.match(/in$/) && !(+value.substr(-2) >= 59 && +value <= 76)
+            /^[0-9]+cm$/.test(value) && +heightAmount() >= 150 && +heightAmount() <= 193 ||
+            /^[0-9]+in$/.test(value) && +heightAmount() >= 59 && +heightAmount() <= 76
         ) ||
-        key == 'hcl' && value.match(/^#[0-9a-f]{6}$/) ||
+        key == 'hcl' && /^#[0-9a-f]{6}$/.test(value) ||
         key == 'ecl' && ['amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth'].includes(value) ||
-        key == 'pid' && value.match(/[0-9]{9}/);
+        key == 'pid' && /^[0-9]{9}$/.test(value) ||
+        key == 'cid';
+    return isValid;
 }
 
 passportData.forEach(line => {
@@ -1170,24 +1176,12 @@ passportData.forEach(line => {
                 allFieldsValid = false
             }
         })
-        if (allFieldsPresent && allFieldsValid) validPassports++;
+        if (allFieldsPresent) validPassportsPart1++;
+        if (allFieldsPresent && allFieldsValid) validPassportsPart2++;
         currentPassportData.clear();
     } else {
         line.split(/ /).forEach(pair => currentPassportData.set(pair.split(/:/)[0], pair.split(/:/)[1]))
     }
 })
-console.log(`Part 1: ${validPassports}`)
-
-console.log(`true: ${validate('byr','2002')}`)
-console.log(`false: ${validate('byr','2003')}`)
-console.log(`true: ${validate('hgt','60in')}`)
-console.log(`true: ${validate('hgt','190cm')}`)
-console.log(`false: ${validate('hgt','190 in')}`)
-console.log(`false: ${validate('hgt','190')}`)
-console.log(`true: ${validate('hcl','#123abc')}`)
-console.log(`false: ${validate('hcl','#123abz')}`)
-console.log(`false: ${validate('hcl','123abc')}`)
-console.log(`true: ${validate('ecl','brn')}`)
-console.log(`false: ${validate('ecl','wat')}`)
-console.log(`true: ${validate('pid','000000001')}`)
-console.log(`false: ${validate('pid','0123456789')}`)
+console.log(`Part 1: ${validPassportsPart1}`)
+console.log(`Part 2: ${validPassportsPart2}`)
