@@ -2062,17 +2062,28 @@ let day6Input: string [] = ['clvxybjp',
     'nsdemfhgpzklctia',
     ''
 ];
-let questions = new Set();
-let totalQuestions: number = 0;
+let totalAnyQuestions: number = 0;
+let totalAllQuestions: number = 0;
+let questions: Map<string, number> = new Map();
+let peopleInGroup: number = 0;
 day6Input.forEach(person => {
     if (person === '') {
-        totalQuestions += questions.size;
-        questions.clear();
-        return
+        totalAnyQuestions += questions.size;
+        let questionIter = questions.values();
+        let currentQuestion = questionIter.next();
+        while (!currentQuestion.done) {
+            if (currentQuestion.value === peopleInGroup) {totalAllQuestions+=1;}
+            currentQuestion = questionIter.next()
+        }
+        questions.clear()
+        peopleInGroup = 0;
+    } else {
+        peopleInGroup++;
+        person.split('').forEach(question => {
+            questions.set(question, (questions.get(question)??0) + 1);
+        })
     }
-    else {
-        person.split('').forEach(question => {questions.add(question)})
-    }
-    
+
 })
-console.log(`Part 1: ${totalQuestions}`);
+console.log(`Part 1: ${totalAnyQuestions}`);
+console.log(`Part 1: ${totalAllQuestions}`);
