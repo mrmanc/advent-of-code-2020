@@ -595,14 +595,20 @@ let day7Input = ['striped beige bags contain 5 dull beige bags.',
 ];
 
 let bagHolders: Map<string, string[]> = new Map();
+let bagContents: Map<string, Map<string,number>> = new Map();
 day7Input.forEach(rule => {
     let ruleParts = rule.split(/ bags contain /);
     let outerBag = ruleParts[0]
     let contents = ruleParts[1]
+    
     contents.split(/, /).forEach(content => {
         let contentColour: string = content.replace(/^[0-9]+ /, '').replace(/ bag.*$/, '')
         if (!bagHolders.has(contentColour)) bagHolders.set(contentColour, []);
         bagHolders.get(contentColour).push(outerBag);
+        if (!bagContents.has(outerBag)) bagContents.set(outerBag, new Map());
+        if (!/no other bags./.test(content)) {
+            if (!bagContents.get(outerBag).has(contentColour)) bagContents.get(outerBag).set(contentColour, +content.replace(/ .*$/, ''));
+        }
     })
 })
 
@@ -618,4 +624,18 @@ function findAllOuter(contentColour: string): Set<string> {
     return colours;
 }
 
+function findAllInner(outerColour: string): number {
+    let numberOfContentBags: number = 0;
+    let contentBagIter = bagContents.get(outerColour).entries(), contentBag = contentBagIter.next()
+    while (!contentBag.done) {
+        let howMany = contentBag.value[1];
+        numberOfContentBags += howMany;
+        let contentColour = contentBag.value[0];
+        numberOfContentBags += findAllInner(contentColour) * howMany;
+        contentBag = contentBagIter.next();
+    }
+    return numberOfContentBags;
+}
+
 console.log(`Part 1: ${findAllOuter('shiny gold').size}`)
+console.log(`Part 2: ${findAllInner('shiny gold')}`)
