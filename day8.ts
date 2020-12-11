@@ -633,17 +633,52 @@ let day8Input = ['acc +15',
     'acc +44',
     'jmp +1'
 ];
-let accumulator: number = 0
-for (let currentLine: number = 0, visitedLines = []; currentLine < day8Input.length;) {
-    if (visitedLines.includes(currentLine)) break;
-    visitedLines.push(currentLine);
-    let currentInstruction = day8Input[currentLine];
-    let operand:number = +currentInstruction.replace(/^.* /,'');
-    if (/^nop/.test(currentInstruction)) currentLine++;
-    else if (/^acc/.test(currentInstruction)) {
-        accumulator += operand;
-        currentLine++;
+let corruptIndex: number = -1;
+
+function execute(instructions: string[]): [number, number[]] {
+    let accumulator: number = 0
+    let visitedLines: number[] = [];
+    for (let currentLine: number = 0; currentLine < instructions.length;) {
+        if (visitedLines.includes(currentLine)) {
+            for (let backTrackIndex: number = visitedLines.length - 2; backTrackIndex > 0; backTrackIndex--) {
+                let backTrackInstruction = instructions[visitedLines[backTrackIndex]];
+                if (/^nop/.test(backTrackInstruction) || /^jmp/.test(backTrackInstruction)) corruptIndex = visitedLines[backTrackIndex];
+            }
+            break;
+        }
+        visitedLines.push(currentLine);
+        let currentInstruction = instructions[currentLine];
+        let operand: number = +currentInstruction.replace(/^.* /, '');
+        if (/^nop/.test(currentInstruction)) currentLine++;
+        else if (/^acc/.test(currentInstruction)) {
+            accumulator += operand;
+            currentLine++;
+        } else if (/^jmp/.test(currentInstruction)) currentLine += operand;
     }
-    else if (/^jmp/.test(currentInstruction)) currentLine += operand;
+    return [accumulator, visitedLines];
 }
-console.log(`Part 1: ${accumulator}`);
+
+function flipInstruction(flipIndex: number) {
+    let instruction = day8Input[flipIndex];
+    if (/^acc/.test(instruction)) {
+        return instruction;
+    } else if (/^nop/.test(instruction)) {
+        return instruction.replace(/nop/, 'jmp');
+    } else {
+        return instruction.replace(/jmp/, 'nop');
+    }
+}
+
+console.log(`Part 1: ${(execute(day8Input)[0])}`);
+for (let currentLine: number = 0; currentLine < day8Input.length; currentLine++) {
+    day8Input[currentLine] = flipInstruction(currentLine);
+    let result: [number, number[]] = execute(day8Input);
+    let visitedLines = result[1];
+    if (visitedLines[visitedLines.length - 1] === day8Input.length - 1) {
+        console.log(`Part 2: ${result[0]}`);
+        break;
+    }
+    else {
+        day8Input[currentLine] = flipInstruction(currentLine)
+    }
+}
