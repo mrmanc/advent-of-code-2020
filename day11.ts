@@ -99,38 +99,112 @@ let day11Input: string[] = ['LLLLLL.LLLLL.LLLL..LLLLLLLLL.LLLLLLLLLLLLLLLLL.LLLL
 
 let currentIteration: string[] = [...day11Input], previousIteration = [...currentIteration];
 
-function position(row: number, col: number) {
-    return previousIteration[row].charAt(col);
+function position(row: number, col: number, seats: string[]) {
+    return seats[row].charAt(col);
 }
 
 function setPosition(row: number, col: number, newValue: string) {
     currentIteration[row] = currentIteration[row].slice(0, col) + newValue + currentIteration[row].slice(col + 1);
 }
 
-function neighbourSeatsOccupied(row: number, col: number) {
+function withinBounds(row: number, col: number) {
+    return row >= 0 && row < day11Input.length && col >= 0 && col < day11Input[0].length;
+}
+
+function isOccupied(neighbourRow: number, neighbourCol: number, seats: string[]) {
+    return /#/.test(position(neighbourRow, neighbourCol, seats));
+}
+
+function isEmpty(neighbourRow: number, neighbourCol: number, seats: string[]) {
+    return /L/.test(position(neighbourRow, neighbourCol, seats));
+}
+
+function neighbourSeatsOccupied(row: number, col: number, seats: string[]) {
     let seatsOccupied: number = 0;
-    let neighbourCoords: [number, number][] = [];
-    neighbourCoords.push([row - 1, col - 1], [row - 1, col], [row - 1, col + 1], [row, col + 1], [row + 1, col + 1], [row + 1, col], [row + 1, col - 1], [row, col - 1]);
-    neighbourCoords.filter(coords => coords[0] >= 0 && coords[0] < day11Input.length && coords[1] >= 0 && coords[1] < day11Input[0].length).forEach(neighbourCoords => {
-        if (/#/.test(position(neighbourCoords[0], neighbourCoords[1]))) seatsOccupied++;
-    })
+    for(let neighbourRow:number = row-1, neighbourCol: number = col-1; withinBounds(neighbourRow, neighbourCol); neighbourRow--, neighbourCol--) {
+        if (isOccupied(neighbourRow, neighbourCol, seats)) {
+            seatsOccupied++;
+            break;
+        } else if (isEmpty(neighbourRow, neighbourCol, seats)) break;
+    }
+    for(let neighbourRow:number = row-1, neighbourCol: number = col; withinBounds(neighbourRow, neighbourCol); neighbourRow--) {
+        if (isOccupied(neighbourRow, neighbourCol, seats)) {
+            seatsOccupied++;
+            break;
+        } else if (isEmpty(neighbourRow, neighbourCol, seats)) break;
+    }
+    for(let neighbourRow:number = row-1, neighbourCol: number = col+1; withinBounds(neighbourRow, neighbourCol); neighbourRow--,neighbourCol++) {
+        if (isOccupied(neighbourRow, neighbourCol, seats)) {
+            seatsOccupied++;
+            break;
+        } else if (isEmpty(neighbourRow, neighbourCol, seats)) break;
+    }
+    for(let neighbourRow:number = row, neighbourCol: number = col+1; withinBounds(neighbourRow, neighbourCol); neighbourCol++) {
+        if (isOccupied(neighbourRow, neighbourCol, seats)) {
+            seatsOccupied++;
+            break;
+        } else if (isEmpty(neighbourRow, neighbourCol, seats)) break;
+    }
+    for(let neighbourRow:number = row+1, neighbourCol: number = col+1; withinBounds(neighbourRow, neighbourCol); neighbourRow++,neighbourCol++) {
+        if (isOccupied(neighbourRow, neighbourCol, seats)) {
+            seatsOccupied++;
+            break;
+        } else if (isEmpty(neighbourRow, neighbourCol, seats)) break;
+    }
+    for(let neighbourRow:number = row+1, neighbourCol: number = col; withinBounds(neighbourRow, neighbourCol); neighbourRow++) {
+        if (isOccupied(neighbourRow, neighbourCol, seats)) {
+            seatsOccupied++;
+            break;
+        } else if (isEmpty(neighbourRow, neighbourCol, seats)) break;
+    }
+    for(let neighbourRow:number = row+1, neighbourCol: number = col-1; withinBounds(neighbourRow, neighbourCol); neighbourRow++,neighbourCol--) {
+        if (isOccupied(neighbourRow, neighbourCol, seats)) {
+            seatsOccupied++;
+            break;
+        } else if (isEmpty(neighbourRow, neighbourCol, seats)) break;
+    }
+    for(let neighbourRow:number = row, neighbourCol: number = col-1; withinBounds(neighbourRow, neighbourCol); neighbourCol--) {
+        if (isOccupied(neighbourRow, neighbourCol, seats)) {
+            seatsOccupied++;
+            break;
+        }
+        else if (isEmpty(neighbourRow, neighbourCol, seats)) break;
+    }
     return seatsOccupied;
 }
-let iterations: number = 0;
-do {
-    previousIteration = [...currentIteration];
-    for (let row: number = 0; row < day11Input.length; row++) {
-        for (let col: number = 0; col < day11Input[row].length; col++) {
-            if (/\./.test(position(row, col))) continue;
-            if (neighbourSeatsOccupied(row, col) === 0) setPosition(row, col, '#')
-            else if (/#/.test(position(row, col)) && neighbourSeatsOccupied(row, col) >= 4) setPosition(row, col, 'L')
+
+function seatsOccupiedWhenStable() {
+    let iterations: number = 0;
+    console.log(previousIteration)
+    do {
+        previousIteration = [...currentIteration];
+        for (let row: number = 0; row < day11Input.length; row++) {
+            for (let col: number = 0; col < day11Input[row].length; col++) {
+                if (/\./.test(position(row, col, previousIteration))) continue;
+                if (neighbourSeatsOccupied(row, col, previousIteration) === 0) setPosition(row, col, '#')
+                else if (isOccupied(row, col, previousIteration) && neighbourSeatsOccupied(row, col, previousIteration) >= 5) setPosition(row, col, 'L')
+            }
         }
-    }
-    iterations++;
-} while (!compare(currentIteration, previousIteration));
-let seatsOccupied: number = 0;
-currentIteration.forEach(row =>seatsOccupied += row.replace(/[^#]/g, '').length)
-console.log(`Part 1: ${seatsOccupied}`)
+        console.log(`Iteration ${iterations++}`);
+        console.log(currentIteration)
+    } while (!compare(currentIteration, previousIteration));
+    let seatsOccupied: number = 0;
+    currentIteration.forEach(row => seatsOccupied += row.replace(/[^#]/g, '').length)
+    return seatsOccupied;
+}
+let testArray: string[] = ['.......#.',
+    '...#.....',
+    '.#.......',
+    '.........',
+    '..#L....#',
+    '....#....',
+    '.........',
+    '#........',
+    '...#.....',
+]
+console.log(neighbourSeatsOccupied(4,3,testArray))
+let seatsOccupied = seatsOccupiedWhenStable();
+console.log(`Part 2: ${seatsOccupied}`)
 
 function compare(array1: string[], array2: string[]): boolean {
     for (let index: number = 0; index < array1.length; index++) {
